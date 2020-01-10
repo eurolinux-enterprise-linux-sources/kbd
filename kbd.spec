@@ -1,6 +1,6 @@
 Name:           kbd
 Version:        1.15.5
-Release:        11%{?dist}
+Release:        12%{?dist}
 Summary:        Tools for configuring the console (keyboard, virtual terminals, etc.)
 
 Group:          System Environment/Base
@@ -13,6 +13,8 @@ Source4:        fr-dvorak.tar.bz2
 Source5:        kbd-latarcyrheb-32.tar.bz2
 Source6:        xml2lst.pl
 Source7:        vlock.pamd
+# Source8: eurlatgr font taken from recent upstream tarball
+Source8:	kbd-eurlatgr.tar.bz2
 # Patch0: puts additional information into man pages
 Patch0:         kbd-1.15-keycodes-man.patch
 # Patch1: sparc modifications
@@ -61,7 +63,7 @@ The %{name}-legacy package contains original keymaps for kbd package.
 Please note that %{name}-legacy is not helpful without kbd.
 
 %prep
-%setup -q -a 2 -a 3 -a 4 -a 5
+%setup -q -a 2 -a 3 -a 4 -a 5 -a 8
 cp -fp %{SOURCE6} .
 %patch0 -p1 -b .keycodes-man
 %patch1 -p1 -b .sparc
@@ -179,6 +181,10 @@ zgrep -L "U+0041" $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/* | xargs rm -f
 /lib/kbd/keymaps/legacy
 
 %changelog
+* Mon Apr 11 2016 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-12
+- Add eurlatgr console font
+  Resolves: #1310286
+
 * Thu Sep 25 2014 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-11
 - Include xkb layouts from xkeyboard-config converted to console keymaps
   Resolves: #1122058
