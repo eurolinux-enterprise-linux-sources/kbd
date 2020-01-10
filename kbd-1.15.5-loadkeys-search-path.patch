@@ -1,0 +1,24 @@
+diff -up kbd-1.15.5/src/loadkeys.c.orig kbd-1.15.5/src/loadkeys.c
+--- kbd-1.15.5/src/loadkeys.c.orig	2013-11-19 10:03:28.544600690 +0100
++++ kbd-1.15.5/src/loadkeys.c	2013-11-19 10:05:21.018542306 +0100
+@@ -168,7 +168,7 @@ static void attr_noreturn usage(void)
+ }
+ 
+ char **dirpath;
+-char *dirpath1[] = { "", DATADIR "/" KEYMAPDIR "/**", KERNDIR "/", 0 };
++char *dirpath1[] = { "", DATADIR "/" KEYMAPDIR "/**", DATADIR "/" XKBKEYMAPDIR "/", DATADIR "/" LEGACYKEYMAPDIR "/**", KERNDIR "/", 0 };
+ char *dirpath2[] = { 0, 0 };
+ char *suffixes[] = { "", ".kmap", ".map", 0 };
+ 
+diff -up kbd-1.15.5/src/paths.h.orig kbd-1.15.5/src/paths.h
+--- kbd-1.15.5/src/paths.h.orig	2013-11-19 10:02:07.117206075 +0100
++++ kbd-1.15.5/src/paths.h	2013-11-19 10:03:07.900722065 +0100
+@@ -5,6 +5,8 @@
+  * The following five subdirectories are defined:
+  */
+ #define KEYMAPDIR "keymaps"
++#define XKBKEYMAPDIR "keymaps/xkb"
++#define LEGACYKEYMAPDIR "keymaps/legacy"
+ #define UNIMAPDIR "unimaps"
+ #define TRANSDIR "consoletrans"
+ #define VIDEOMODEDIR "videomodes"

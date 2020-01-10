@@ -1,6 +1,6 @@
 Name:           kbd
 Version:        1.15.5
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        Tools for configuring the console (keyboard, virtual terminals, etc.)
 
 Group:          System Environment/Base
@@ -11,7 +11,8 @@ Source2:        kbd-latsun-fonts.tar.bz2
 Source3:        kbd-latarcyrheb-16-fixed.tar.bz2
 Source4:        fr-dvorak.tar.bz2
 Source5:        kbd-latarcyrheb-32.tar.bz2
-Source6:        vlock.pamd
+Source6:        xml2lst.pl
+Source7:        vlock.pamd
 # Patch0: puts additional information into man pages
 Patch0:         kbd-1.15-keycodes-man.patch
 # Patch1: sparc modifications
@@ -26,10 +27,14 @@ Patch4:         kbd-1.15.5-loadkeys-regression.patch
 Patch5:         kbd-1.15.5-sg-decimal-separator.patch
 # Patch6: implement PAM account and password management, backported from upstream
 Patch6:         kbd-1.15.5-vlock-more-pam.patch
+# Patch7: adds xkb and legacy keymaps subdirs to loadkyes search path, bz 1028207 
+Patch7:         kbd-1.15.5-loadkeys-search-path.patch
 
 BuildRequires:  bison, flex, gettext, pam-devel
+BuildRequires:  console-setup, xkeyboard-config
 Requires:       initscripts >= 5.86-1
 Requires:       %{name}-misc = %{version}-%{release}
+Requires:       %{name}-legacy = %{version}-%{release}
 Provides:       vlock = %{version}
 Conflicts:      vlock <= 1.3
 Obsoletes:      vlock
@@ -47,8 +52,17 @@ BuildArch:      noarch
 The %{name}-misc package contains data for kbd package - console fonts,
 keymaps etc. Please note that %{name}-misc is not helpful without kbd.
 
+%package legacy
+Summary:        Legacy data for kbd package
+BuildArch:      noarch
+
+%description legacy
+The %{name}-legacy package contains original keymaps for kbd package.
+Please note that %{name}-legacy is not helpful without kbd.
+
 %prep
 %setup -q -a 2 -a 3 -a 4 -a 5
+cp -fp %{SOURCE6} .
 %patch0 -p1 -b .keycodes-man
 %patch1 -p1 -b .sparc
 %patch2 -p1 -b .unicode_start
@@ -56,6 +70,7 @@ keymaps etc. Please note that %{name}-misc is not helpful without kbd.
 %patch4 -p1 -b .loadkeys-regression
 %patch5 -p1 -b .sg-decimal-separator
 %patch6 -p1 -b .vlock-more-pam
+%patch7 -p1 -b .loadkeys-search-path
 
 # 7-bit maps are obsolete; so are non-euro maps
 pushd data/keymaps/i386
@@ -122,7 +137,30 @@ rm -rf $RPM_BUILD_ROOT/lib/kbd/locale
 
 # Install PAM configuration for vlock
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pam.d
-install -m 644 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/vlock
+install -m 644 %{SOURCE7} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/vlock
+
+# Move original keymaps to legacy directory
+mkdir -p $RPM_BUILD_ROOT/lib/kbd/keymaps/legacy
+mv $RPM_BUILD_ROOT/lib/kbd/keymaps/{amiga,atari,i386,include,mac,ppc,sun} $RPM_BUILD_ROOT/lib/kbd/keymaps/legacy
+
+# Convert X keyboard layouts to console keymaps
+mkdir -p $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb
+perl xml2lst.pl < /usr/share/X11/xkb/rules/base.xml > layouts-variants.lst
+while read line; do
+  XKBLAYOUT=`echo "$line" | cut -d " " -f 1`
+  echo "$XKBLAYOUT" >> layouts-list.lst
+  XKBVARIANT=`echo "$line" | cut -d " " -f 2`
+  ckbcomp "$XKBLAYOUT" "$XKBVARIANT" | gzip > $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/"$XKBLAYOUT"-"$XKBVARIANT".map.gz
+done < layouts-variants.lst
+
+# Convert X keyboard layouts (plain, no variant)
+cat layouts-list.lst | sort -u >> layouts-list-uniq.lst
+while read line; do
+  ckbcomp "$line" | gzip > $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/"$line".map.gz
+done < layouts-list-uniq.lst
+
+# wipe converted layouts which cannot input ASCII (#1031848)
+zgrep -L "U+0041" $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/* | xargs rm -f
 
 %find_lang %{name}
 
@@ -135,8 +173,16 @@ install -m 644 %{SOURCE6} $RPM_BUILD_ROOT%{_sysconfdir}/pam.d/vlock
 
 %files misc
 /lib/kbd
+%exclude /lib/kbd/keymaps/legacy
+
+%files legacy
+/lib/kbd/keymaps/legacy
 
 %changelog
+* Thu Sep 25 2014 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-11
+- Include xkb layouts from xkeyboard-config converted to console keymaps
+  Resolves: #1122058
+
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.15.5-10
 - Mass rebuild 2014-01-24
 
