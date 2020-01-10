@@ -1,0 +1,426 @@
+diff -up kbd-1.15.5/man/man1/dumpkeys.1.in.orig kbd-1.15.5/man/man1/dumpkeys.1.in
+--- kbd-1.15.5/man/man1/dumpkeys.1.in.orig	2018-06-19 10:36:33.232357789 +0200
++++ kbd-1.15.5/man/man1/dumpkeys.1.in	2018-06-19 10:36:33.247357808 +0200
+@@ -5,10 +5,15 @@ dumpkeys \- dump keyboard translation ta
+ .SH SYNOPSIS
+ .B dumpkeys
+ [
+-.B \-hilfn
++.B \-1Vdfhiklnstv
++.B \-h \-\-help \-i \-\-short\-info \-l \-s \-\-long\-info
++.B \-n \-\-numeric \-f \-\-full\-table \-1 \-\-separate-lines
++.BI \-S shape
++.BI \-\-shape= shape
++.B \-t \-\-funcs\-only \-k \-\-keys\-only \-d \-\-compose\-only
+ .BI \-c charset
+-.B \-\-help \-\-short\-info \-\-long\-info \-\-numeric \-\-full\-table \-\-funcs\-only \-\-keys\-only \-\-compose\-only
+ .BI \-\-charset= charset
++.B \-v \-\-verbose \-V \-\-version
+ ]
+ .SH DESCRIPTION
+ .IX "dumpkeys command" "" "\fLdumpkeys\fR command"  
+@@ -121,7 +126,7 @@ You can see you current function key def
+ .RE
+ .LP
+ .TP
+-.B \-l \-\-long-info
++.B \-l \-s \-\-long-info
+ This option instructs
+ .B dumpkeys
+ to print a long information listing. The output is the same as with the
+@@ -164,7 +169,10 @@ to write one line per (modifier,keycode)
+ for plain keycodes.
+ .LP
+ .TP
+-.B \-\-funcs-only
++.BI \-S shape " " " " \-\-shape= shape
++.LP
++.TP
++.B \-t \-\-funcs-only
+ When this option is given,
+ .B dumpkeys
+ prints only the function key string definitions. Normally
+@@ -172,7 +180,7 @@ prints only the function key string defi
+ prints both the key bindings and the string definitions.
+ .LP
+ .TP
+-.B \-\-keys-only
++.B \-k \-\-keys-only
+ When this option is given,
+ .B dumpkeys
+ prints only the key bindings. Normally
+@@ -180,7 +188,7 @@ prints only the key bindings. Normally
+ prints both the key bindings and the string definitions.
+ .LP
+ .TP
+-.B \-\-compose-only
++.B \-d \-\-compose-only
+ When this option is given,
+ .B dumpkeys
+ prints only the compose key combinations.
+@@ -205,6 +213,13 @@ This option produces an output line `cha
+ loadkeys how to interpret the keymap. (For example, "division" is
+ 0xf7 in iso-8859-1 but 0xba in iso-8859-8.)
+ .LP
++.TP
++.B \-v \-\-verbose
++.LP
++.TP
++.B \-V \-\-version
++Prints version number and exits.
++.LP
+ .SH FILES
+ .PD 0
+ .TP 20
+diff -up kbd-1.15.5/man/man1/fgconsole.1.orig kbd-1.15.5/man/man1/fgconsole.1
+--- kbd-1.15.5/man/man1/fgconsole.1.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/man/man1/fgconsole.1	2018-06-19 10:36:33.247357808 +0200
+@@ -5,7 +5,13 @@ fgconsole \- print the number of the act
+ 
+ .SH SYNOPSIS
+ .B fgconsole
+-.BI [ "--help" | "--version" | "--next-available" ]
++.BI [
++\-h \-\-help
++|
++\-V \-\-version
++|
++\-n \-\-next-available
++]
+ .SH DESCRIPTION
+ If the active Virtual Terminal is
+ .IR /dev/ttyN ,
+@@ -17,6 +23,12 @@ If the console is a serial console, then
+ "serial" 
+ is printed instead.
+ .TP
++.I \-h \-\-help
++Prints short usage message and exits.
++.TP
++.I \-V \-\-version
++Prints version number and exits.
++.TP
+ .I \-\-next\-available
+ Will show the next unallocated virtual terminal. Normally 6 virtual
+ terminals are allocated, with number 7 used for X; this will return
+diff -up kbd-1.15.5/man/man1/loadkeys.1.in.orig kbd-1.15.5/man/man1/loadkeys.1.in
+--- kbd-1.15.5/man/man1/loadkeys.1.in.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/man/man1/loadkeys.1.in	2018-06-19 10:36:33.247357808 +0200
+@@ -5,6 +5,9 @@ loadkeys \- load keyboard translation ta
+ .SH SYNOPSIS
+ .B loadkeys
+ [
++.I -a --ascii
++] [
++[
+ .I -b --bkeymap
+ ] [
+ .I -c --clearcompose
+@@ -19,6 +22,8 @@ loadkeys \- load keyboard translation ta
+ ] [
+ .I -m --mktable
+ ] [
++.I -p --parse
++] [
+ .I -q --quiet
+ ] [
+ .I -s --clearstrings
+@@ -27,6 +32,8 @@ loadkeys \- load keyboard translation ta
+ ] [
+ .I -v --verbose
+ ] [
++.I -V --version
++] [
+ .I filename...
+ ]
+ .LP
+@@ -177,14 +184,25 @@ instead of using the
+ option.
+ .SH "OTHER OPTIONS"
+ .TP
++.B \-a \-\-ascii
++Force conversion to ASCII.
++.TP
+ .B \-h \-\-help
+ .B loadkeys
+ prints its version number and a short usage message to the programs
+ standard error output and exits.
+ .TP
++.B \-p \-\-parse
++.B loadkeys
++searchs and parses keymap without action.
++.TP
+ .B \-q \-\-quiet
+ .B loadkeys
+ suppresses all normal output.
++.TP
++.B \-V \-\-version
++.B loadkeys
++prints version number and exits.
+ .SH WARNING
+ Note that anyone having read access to
+ .B /dev/console
+diff -up kbd-1.15.5/man/man1/showkey.1.orig kbd-1.15.5/man/man1/showkey.1
+--- kbd-1.15.5/man/man1/showkey.1.orig	2018-06-19 10:36:33.225357780 +0200
++++ kbd-1.15.5/man/man1/showkey.1	2018-06-19 10:36:33.248357810 +0200
+@@ -3,7 +3,7 @@
+ .SH NAME
+ showkey \- examine the codes sent by the keyboard
+ .SH SYNOPSIS
+-showkey [\-h|\-\-help] [\-a|\-\-ascii] [\-s|\-\-scancodes] [\-k|\-\-keycodes]
++showkey [\-h|\-\-help] [\-a|\-\-ascii] [\-s|\-\-scancodes] [\-k|\-\-keycodes] [\-V|\-\-version]
+ .SH DESCRIPTION
+ .IX "showkey command" "" "\fLshowkey\fR command"  
+ .LP
+@@ -66,6 +66,10 @@ are present.
+ Starts
+ .B showkey
+ in `ascii' dump mode.
++.TP
++\-V \-\-version
++.B showkey
++prints version number and exits.
+ .SH "2.6 KERNELS"
+ In 2.6 kernels key codes lie in the range 1-255, instead of 1-127.
+ Key codes larger than 127 are returned as three bytes of which the
+diff -up kbd-1.15.5/man/man8/kbdrate.8.orig kbd-1.15.5/man/man8/kbdrate.8
+--- kbd-1.15.5/man/man8/kbdrate.8.orig	2018-06-19 10:36:33.227357783 +0200
++++ kbd-1.15.5/man/man8/kbdrate.8	2018-06-19 10:36:33.248357810 +0200
+@@ -48,7 +48,7 @@ For Intel-based systems, the allowable r
+ in 250 ms steps. For SPARC systems, possible values are between 10 ms and 1440 ms,
+ in 10 ms steps.
+ .TP
+-.B \-V
++.B \-V \-\-version
+ Display a version number and exit.
+ .SH BUGS
+ Not all keyboards support all rates.
+diff -up kbd-1.15.5/man/man8/mapscrn.8.in.orig kbd-1.15.5/man/man8/mapscrn.8.in
+--- kbd-1.15.5/man/man8/mapscrn.8.in.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/man/man8/mapscrn.8.in	2018-06-19 10:36:33.248357810 +0200
+@@ -3,7 +3,7 @@
+ .SH NAME
+ mapscrn \- load screen output mapping table
+ .SH SYNOPSIS
+-.BR mapscrn " [" -v "] [" -o
++.BR mapscrn " [" -V "] [" -v "] [" -o
+ .IR map.orig ]
+ .I mapfile
+ .SH DESCRIPTION
+@@ -96,6 +96,13 @@ Single (possibly multi-byte) UTF-8 chara
+ Note that control characters (with codes < 32) cannot be re-mapped with
+ .I mapscrn
+ because they have special meaning for the driver.
++.SH OTHER OPTIONS
++.TP
++.B \-V
++Prints version number and exits.
++.TP
++.B \-v
++Be verbose.
+ .SH FILES
+ .I @DATADIR@/consoletrans
+ is the default directory for screen mappings.
+diff -up kbd-1.15.5/man/man8/setvtrgb.8.orig kbd-1.15.5/man/man8/setvtrgb.8
+--- kbd-1.15.5/man/man8/setvtrgb.8.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/man/man8/setvtrgb.8	2018-06-19 10:36:33.248357810 +0200
+@@ -4,7 +4,7 @@
+ setvtrgb \- set the virtual terminal RGB colors
+ .SH SYNOPSIS
+ .B setvtrgb
+-.I vga|FILE|\-
++.I \-h|\-V|vga|FILE|\-
+ .SH DESCRIPTION
+ The
+ .I setvtrgb
+@@ -30,6 +30,14 @@ To seed a valid
+ And then edit the values in
+ .B FILE
+ 
++.SH OTHER OPTIONS
++.TP
++\-h
++Prints usage message and exits.
++.TP
++\-V
++Prints version number and exists.
++
+ .SH AUTHOR
+ The utility is written by Alexey Gladkov, Seth Forshee, Dustin Kirkland.
+ 
+diff -up kbd-1.15.5/man/man8/showconsolefont.8.orig kbd-1.15.5/man/man8/showconsolefont.8
+--- kbd-1.15.5/man/man8/showconsolefont.8.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/man/man8/showconsolefont.8	2018-06-19 10:36:33.248357810 +0200
+@@ -6,10 +6,12 @@ showconsolefont \- Show the current EGA/
+ .SH SYNOPSIS
+ .B showconsolefont
+ [
+-.B \-V
++.B \-V | \-\-version
+ ] [
+ .B \-v
+ ] [
++.B \-i
++] [
+ .B \-C
+ .I console
+ ]
+@@ -20,6 +22,8 @@ The
+ command outputs the current console font to stdout.
+ The option \-v prints additional information, while
+ the option \-V prints the program version number.
++The option \-i doesn't print out the font table,
++just shows ROWSxCOLSxCOUNT and exits.
+ On Linux 2.6.1 and later, the option \-C allows one
+ to indicate the console involved. Its argument is a pathname.
+ 
+diff -up kbd-1.15.5/src/dumpkeys.c.orig kbd-1.15.5/src/dumpkeys.c
+--- kbd-1.15.5/src/dumpkeys.c.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/src/dumpkeys.c	2018-06-19 10:36:33.248357810 +0200
+@@ -558,19 +558,24 @@ valid options are:\n\
+ \n\
+ 	-h --help	    display this help text\n\
+ 	-i --short-info	    display information about keyboard driver\n\
+-	-l --long-info	    display above and symbols known to loadkeys\n\
++	-l -s --long-info   display above and symbols known to loadkeys\n\
+ 	-n --numeric	    display keytable in hexadecimal notation\n\
+ 	-f --full-table	    don't use short-hand notations, one row per keycode\n\
+ 	-1 --separate-lines one line per (modifier,keycode) pair\n\
+-	   --funcs-only	    display only the function key strings\n\
+-	   --keys-only	    display only key bindings\n\
+-	   --compose-only   display only compose key combinations\n\
++	-S --shape=\n\
++	-t --funcs-only	    display only the function key strings\n\
++	-k --keys-only	    display only key bindings\n\
++	-d --compose-only   display only compose key combinations\n\
+ 	-c --charset="));
+ 	list_charsets(stderr);
+ 	fprintf(stderr, _("\
+ 			    interpret character action codes to be from the\n\
+ 			    specified character set\n\
+ "));
++	fprintf(stderr, _("\
++	-v --verbose\n\
++	-V --version	    print version number\n\
++"));
+ 	exit(1);
+ }
+ 
+diff -up kbd-1.15.5/src/kbdinfo.c.orig kbd-1.15.5/src/kbdinfo.c
+--- kbd-1.15.5/src/kbdinfo.c.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/src/kbdinfo.c	2018-06-19 10:36:33.248357810 +0200
+@@ -18,7 +18,10 @@ usage(int code) {
+ 		_("Usage: %1$s [-C DEVICE] getmode [text|graphics]\n"
+ 		  "   or: %1$s [-C DEVICE] gkbmode [raw|xlate|mediumraw|unicode]\n"
+ 	          "   or: %1$s [-C DEVICE] gkbmeta [metabit|escprefix]\n"
+-	          "   or: %1$s [-C DEVICE] gkbled  [scrolllock|numlock|capslock]\n"),
++	          "   or: %1$s [-C DEVICE] gkbled  [scrolllock|numlock|capslock]\n"
++	          "Other options:\n"
++	          "   -h                   print this usage message\n"
++	          "   -V                   print version number\n"),
+ 		progname);
+ 	exit(code);
+ }
+diff -up kbd-1.15.5/src/kbdrate.c.orig kbd-1.15.5/src/kbdrate.c
+--- kbd-1.15.5/src/kbdrate.c.orig	2018-06-19 10:36:33.227357783 +0200
++++ kbd-1.15.5/src/kbdrate.c	2018-06-19 10:36:33.249357811 +0200
+@@ -257,7 +257,7 @@ main( int argc, char **argv ) {
+ 	    (!strcmp(argv[1], "-V") || !strcmp(argv[1], "--version")))
+ 		print_version_and_exit();
+ 
+-	while ( (c = getopt( argc, argv, "r:d:sv" )) != EOF ) {
++	while ( (c = getopt( argc, argv, "r:d:s" )) != EOF ) {
+ 		switch (c) {
+ 		case 'r':
+ 			rate = atof( optarg );
+@@ -270,7 +270,7 @@ main( int argc, char **argv ) {
+ 			break;
+ 		default:
+ 			fprintf(stderr,
+-				_("Usage: kbdrate [-V] [-s] [-r rate] [-d delay]\n"));
++				_("Usage: kbdrate [-V | --version] [-s] [-r rate] [-d delay]\n"));
+ 			exit(1);
+ 		}
+ 	}
+diff -up kbd-1.15.5/src/loadkeys.c.orig kbd-1.15.5/src/loadkeys.c
+--- kbd-1.15.5/src/loadkeys.c.orig	2018-06-19 10:36:33.244357804 +0200
++++ kbd-1.15.5/src/loadkeys.c	2018-06-19 10:36:33.249357811 +0200
+@@ -162,7 +162,8 @@ static void attr_noreturn usage(void)
+ 			  "  -q --quiet         suppress all normal output\n"
+ 			  "  -s --clearstrings  clear kernel string table\n"
+ 			  "  -u --unicode       force conversion to Unicode\n"
+-			  "  -v --verbose       report the changes\n"),
++			  "  -v --verbose       report the changes\n"
++			  "  -V --version       print version number\n"),
+ 		PACKAGE_VERSION, DEFMAP);
+ 	exit(EXIT_FAILURE);
+ }
+diff -up kbd-1.15.5/src/mapscrn.c.orig kbd-1.15.5/src/mapscrn.c
+--- kbd-1.15.5/src/mapscrn.c.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/src/mapscrn.c	2018-06-19 10:36:33.249357811 +0200
+@@ -65,7 +65,7 @@ main(int argc, char *argv[]) {
+ 	}
+ 		
+ 	if (argc != 2) {
+-		fprintf(stderr, _("usage: %s [-v] [-o map.orig] map-file\n"),
++		fprintf(stderr, _("usage: %s [-V] [-v] [-o map.orig] map-file\n"),
+ 			progname);
+ 		exit(1);
+ 	}
+diff -up kbd-1.15.5/src/setvtrgb.c.orig kbd-1.15.5/src/setvtrgb.c
+--- kbd-1.15.5/src/setvtrgb.c.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/src/setvtrgb.c	2018-06-19 10:36:33.250357812 +0200
+@@ -39,7 +39,8 @@ static void attr_noreturn
+ usage(int code)
+ {
+ 	fprintf(stderr,
+-		_("Usage: %s vga|FILE|-\n"
++		_("Usage: %s [-h] [-V]\n"
++		"       %s vga|FILE|-\n"
+ 		"\n"
+ 		"If you use the FILE parameter, FILE should be exactly 3 lines of\n"
+ 		"comma-separated decimal values for RED, GREEN, and BLUE.\n"
+@@ -48,8 +49,12 @@ usage(int code)
+ 		"   cat /sys/module/vt/parameters/default_{red,grn,blu} > FILE\n"
+ 		"\n"
+ 		"and then edit the values in FILE.\n"
++		"\n"
++		"Other options:\n"
++		"   -h     print this usage message\n"
++		"   -V     print version number\n"
+ 		"\n"),
+-		progname);
++		progname, progname);
+ 	exit(code);
+ }
+ 
+diff -up kbd-1.15.5/src/showconsolefont.c.orig kbd-1.15.5/src/showconsolefont.c
+--- kbd-1.15.5/src/showconsolefont.c.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/src/showconsolefont.c	2018-06-19 10:37:06.169399318 +0200
+@@ -106,10 +106,11 @@ usage(void) {
+ 		  "(probably after loading a font with `setfont font')\n"
+ 		  "\n"
+ 		  "Valid options are:\n"
+-		  " -C tty   Device to read the font from. Default: current tty.\n"
+-		  " -v       Be more verbose.\n"
+-		  " -i       Don't print out the font table, just show\n"
+-		  "          ROWSxCOLSxCOUNT and exit.\n"));
++		  " -V --version    Print version number and exit.\n"
++		  " -C tty          Device to read the font from. Default: current tty.\n"
++		  " -v              Be more verbose.\n"
++		  " -i              Don't print out the font table, just show\n"
++		  "                 ROWSxCOLSxCOUNT and exit.\n"));
+ 	exit(1);
+ }
+ 
+diff -up kbd-1.15.5/src/showkey.c.orig kbd-1.15.5/src/showkey.c
+--- kbd-1.15.5/src/showkey.c.orig	2012-12-01 22:41:38.000000000 +0100
++++ kbd-1.15.5/src/showkey.c	2018-06-19 10:36:33.250357812 +0200
+@@ -85,6 +85,7 @@ usage(void) {
+ "	-a --ascii	display the decimal/octal/hex values of the keys\n"
+ "	-s --scancodes	display only the raw scan-codes\n"
+ "	-k --keycodes	display only the interpreted keycodes (default)\n"
++"	-V --version	print version number\n"
+ ), PACKAGE_VERSION);
+ 	exit(1);
+ }

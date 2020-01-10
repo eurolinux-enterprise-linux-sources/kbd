@@ -1,6 +1,6 @@
 Name:           kbd
 Version:        1.15.5
-Release:        13%{?dist}
+Release:        15%{?dist}
 Summary:        Tools for configuring the console (keyboard, virtual terminals, etc.)
 
 Group:          System Environment/Base
@@ -17,6 +17,10 @@ Source7:        vlock.pamd
 Source8:	kbd-eurlatgr.tar.bz2
 # Source9: adds compose rules to generated cz.map
 Source9:        cz-map.patch
+# Source10: replaces CtrlL_Lock with Caps_Lock in generated us.map
+Source10:       us-map.patch
+# Source11: man page for kbdinfo
+Source11:       kbdinfo.1
 # Patch0: puts additional information into man pages
 Patch0:         kbd-1.15-keycodes-man.patch
 # Patch1: sparc modifications
@@ -33,6 +37,8 @@ Patch5:         kbd-1.15.5-sg-decimal-separator.patch
 Patch6:         kbd-1.15.5-vlock-more-pam.patch
 # Patch7: adds xkb and legacy keymaps subdirs to loadkyes search path, bz 1028207 
 Patch7:         kbd-1.15.5-loadkeys-search-path.patch
+# Patch8: improves quality and coverage of kbd man pages and usage messages
+Patch8:         kbd-1.15.5-man-and-usage-consistency.patch
 
 BuildRequires:  bison, flex, gettext, pam-devel
 BuildRequires:  console-setup, xkeyboard-config
@@ -68,6 +74,7 @@ Please note that %{name}-legacy is not helpful without kbd.
 %setup -q -a 2 -a 3 -a 4 -a 5 -a 8
 cp -fp %{SOURCE6} .
 cp -fp %{SOURCE9} .
+cp -fp %{SOURCE10} .
 %patch0 -p1 -b .keycodes-man
 %patch1 -p1 -b .sparc
 %patch2 -p1 -b .unicode_start
@@ -76,6 +83,7 @@ cp -fp %{SOURCE9} .
 %patch5 -p1 -b .sg-decimal-separator
 %patch6 -p1 -b .vlock-more-pam
 %patch7 -p1 -b .loadkeys-search-path
+%patch8 -p1 -b .man-and-usage-consistency
 
 # 7-bit maps are obsolete; so are non-euro maps
 pushd data/keymaps/i386
@@ -135,6 +143,10 @@ sed -i -e 's,\<kbd_mode\>,/bin/kbd_mode,g;s,\<setfont\>,/bin/setfont,g' \
 
 # Link open to openvt
 ln -s openvt $RPM_BUILD_ROOT%{_bindir}/open
+ln -s openvt.1.gz $RPM_BUILD_ROOT%{_mandir}/man1/open.1.gz
+
+# install kbdinfo manpage
+gzip -c %SOURCE11 > $RPM_BUILD_ROOT/%{_mandir}/man1/kbdinfo.1.gz
 
 # Move locale files to correct place
 cp -r $RPM_BUILD_ROOT/lib/kbd/locale/ $RPM_BUILD_ROOT%{_datadir}/locale
@@ -172,6 +184,11 @@ gunzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map.gz
 patch $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map < %{SOURCE9}
 gzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map
 
+# Fix converted us layout - replace CtrlL_Lock with Caps_Lock
+gunzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/us.map.gz
+patch $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/us.map < %{SOURCE10}
+gzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/us.map
+
 %find_lang %{name}
 
 %files -f %{name}.lang
@@ -189,6 +206,16 @@ gzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map
 /lib/kbd/keymaps/legacy
 
 %changelog
+* Mon Aug 13 2018 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-15
+- Add man page for kbdinfo, link open man page to openvt man page
+  Related: #949015
+
+* Tue Jun 19 2018 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-14
+- Replace CtrlL_Lock with Caps_Lock in generated us.map
+  Resolves: #1441411
+- Improve man pages and usage messages quality and consistency
+  Resolves: #949015
+
 * Tue Feb 14 2017 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-13
 - Add compose rules to generated cz.map
   Resolves: #1181581
