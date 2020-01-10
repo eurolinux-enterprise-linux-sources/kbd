@@ -1,6 +1,6 @@
 Name:           kbd
 Version:        1.15.5
-Release:        12%{?dist}
+Release:        13%{?dist}
 Summary:        Tools for configuring the console (keyboard, virtual terminals, etc.)
 
 Group:          System Environment/Base
@@ -15,6 +15,8 @@ Source6:        xml2lst.pl
 Source7:        vlock.pamd
 # Source8: eurlatgr font taken from recent upstream tarball
 Source8:	kbd-eurlatgr.tar.bz2
+# Source9: adds compose rules to generated cz.map
+Source9:        cz-map.patch
 # Patch0: puts additional information into man pages
 Patch0:         kbd-1.15-keycodes-man.patch
 # Patch1: sparc modifications
@@ -65,6 +67,7 @@ Please note that %{name}-legacy is not helpful without kbd.
 %prep
 %setup -q -a 2 -a 3 -a 4 -a 5 -a 8
 cp -fp %{SOURCE6} .
+cp -fp %{SOURCE9} .
 %patch0 -p1 -b .keycodes-man
 %patch1 -p1 -b .sparc
 %patch2 -p1 -b .unicode_start
@@ -164,6 +167,11 @@ done < layouts-list-uniq.lst
 # wipe converted layouts which cannot input ASCII (#1031848)
 zgrep -L "U+0041" $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/* | xargs rm -f
 
+# Fix converted cz layout - add compose rules
+gunzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map.gz
+patch $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map < %{SOURCE9}
+gzip $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/cz.map
+
 %find_lang %{name}
 
 %files -f %{name}.lang
@@ -181,6 +189,10 @@ zgrep -L "U+0041" $RPM_BUILD_ROOT/lib/kbd/keymaps/xkb/* | xargs rm -f
 /lib/kbd/keymaps/legacy
 
 %changelog
+* Tue Feb 14 2017 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-13
+- Add compose rules to generated cz.map
+  Resolves: #1181581
+
 * Mon Apr 11 2016 Vitezslav Crhonek <vcrhonek@redhat.com> - 1.15.5-12
 - Add eurlatgr console font
   Resolves: #1310286
